@@ -9,6 +9,41 @@ var patient = '';
 var patientUid = '';
 var count = 0;
 
+
+
+
+/**
+ * Schedules and appointment
+ * Patient can choose a doctor or a time
+ */
+function scheduleApp() {
+  // Choose doctor or time
+  var doctor = true;
+  if(doctor) {
+    // Choose by doctor
+    
+  } else {
+    // Choose by time
+    
+  }
+
+  localStorage.setItem('gotDoctor', false);
+  localStorage.setItem('gotTime', false);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /**
  * Add an apointment
  * User clicks button, verifies that the doctor exists,
@@ -76,7 +111,8 @@ function addApp() {
                                 notes: '',
                                 webrtckey: '',
                                 temperature: 29,
-                                tempdata: 98
+                                tempdata: 98,
+                                confirmed: false
                             };
                             console.log(data);
 
