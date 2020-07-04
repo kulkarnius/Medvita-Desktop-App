@@ -30,7 +30,7 @@ function createWindow() {
     });
 
     win.loadURL(url.format({
-        pathname: path.join(__dirname, 'homescreen.html'),
+        pathname: path.join(__dirname, 'serial.html'),
         protocol: 'file',
         slashes: true
     }));
