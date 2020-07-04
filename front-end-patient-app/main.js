@@ -30,7 +30,7 @@ function createWindow() {
     });
 
     win.loadURL(url.format({
-        pathname: path.join(__dirname, 'login.html'),
+        pathname: path.join(__dirname, 'appointment.html'),
         protocol: 'file',
         slashes: true
     }));
