@@ -10,7 +10,7 @@ table {
     margin: 0 auto;
   }
   
-  #table-picture, #table-element {
+ td {
     border: 1px solid #dddddd;
     padding: 20px;
     vertical-align: middle;
