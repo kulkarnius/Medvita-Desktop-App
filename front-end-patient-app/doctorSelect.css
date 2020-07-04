@@ -1,0 +1,23 @@
+body{
+    background: linear-gradient(to left, #12c2e9, #c471ed, #f64f59); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */ 
+    background-size: cover;
+    background-position: center;
+    color:white;
+}
+table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  #table-element {
+    border: 1px solid #dddddd;
+    padding: 8px;
+  }
+
+  #table-picture, #table-element {
+      text-align: center;
+  }
+  
+  tr:nth-child(even) {
+    background-color: transparent;
+  }
