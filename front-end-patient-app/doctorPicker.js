@@ -7,28 +7,53 @@ const auth = firebase.auth();
 
 const gotTime = localStorage.getItem('gotTime');
 
-if (gotTime) {
+function init() {
+
   // If the user has chosen a time, will get doctors that are
   // available during that time
-  db.collection('doctors').where("availability", "array-contains", `${dateConcat}`)
-  .limit(8).get()
-  .then(function (querySnapshot) {
+  if (gotTime) {
+    db.collection('doctors').where("availability", "array-contains", `${dateConcat}`)
+    .limit(10).get()
+    .then(function (querySnapshot) {
+      querySnapshot.forEach(function(doc) {
+        displayDoctorProfile(doc)
+      });
+    })
+  } 
 
-    // Display each doctor profile
-    querySnapshot.forEach(function(doc) {
-        console.log("Schedule data for meeting ", count, " : ", doc.data());
-        displayApp(doc);
-        doctorUidArray[count] = doc.data().doctoruid;
-        dateArray[count] = doc.data().dateConcat;
-        count++;
+  // If the user has not chosen a time, then will pull from recently used
+  // doctors, fill the rest up with random ones
+  else {
+    db.collection('doctors').limit(10)
+    .get()
+    .then(function(querySnapshot) {
+      querySnapshot.forEach(function(doc) {
+        displayDoctorProfile(doc);
+      });
+    })
+    .catch(function(error) {
+      console.log('Error => ', error);
+      alert("Could not retrieve doctors");
     });
-  })
-
-} else {
-  /**
-  * If the user has not chosen a time, then will pull from recently used
-  * doctors, fill the rest up with random ones
-  */
-
+  }
 }
 
+function displayDoctorProfile(doc) {
+  
+}
+
+function pickDoctor(doctorUid) {
+  // Adds schedule to database and emails doctor
+  if (gotTime == true) {
+    db.collection('doctors').doc(`$`)
+  } 
+  
+  // Sends user to time picker page
+  else {
+    localStorage.setItem('doctorUid', doctorUid);
+    localStorage.setItem('gotDoctor', true);
+    window.location = "timePicker.html";
+  }
+}
+
+init();
