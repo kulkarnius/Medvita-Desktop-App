@@ -11,6 +11,11 @@ const url = require("url");
 const ipc = electron.ipcMain;
 const dialog = electron.dialog;
 
+//this lets windows reload for development purposes
+require('electron-reload')(__dirname, {
+    electron: path.join(__dirname, 'node_modules', '.bin', 'electron')
+  });
+
 let win;
 
 function createWindow() {

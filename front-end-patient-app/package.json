@@ -5,7 +5,8 @@
     "main": "main.js",
     "devDependencies": {
         "electron": "^9.0.5",
-        "electron-packager": "^14.2.1"
+        "electron-packager": "^14.2.1",
+        "electron-reload": "^1.5.0"
     },
     "scripts": {
         "start": "electron ."
