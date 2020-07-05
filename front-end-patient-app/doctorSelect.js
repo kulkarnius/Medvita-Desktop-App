@@ -7,7 +7,42 @@ const auth = firebase.auth();
 
 const gotTime = localStorage.getItem('gotTime');
 
+var doctorUidArray = new Array();
+
+/**
+ * Displays all of the available doctors
+ * Note: Add feature that puts recently chosen doctors on the list
+ * and figure out a way to best filter doctors (eg prioritize by
+ * availability within the next month)
+ */
 function init() {
+  var firstDoc = true;
+  var count = 0;
+
+  // Displays the doctor profiles
+  function displayDoctorProfile(doc) {
+    if (firstDoc) {
+      $('.DocShow')
+      .append('<tr>')
+      .append('<th>Doctor</th>')
+      .append('<th>Specialization</th>')
+      .append('<th></th>')
+      .append('</tr>')
+      .append('<tr>')
+      .append('<td><img class="resize" src="sexyaditya.jpg">' + doc.data().fname + ' ' + doc.data().lname + '</td>')
+      .append('<td>Paleontology</td>')
+      .append('<td><button class="btn btn-primary" type="button" id="button" onClick="pickDoctor(' + count + ')"> Select</button></td>')
+      .append('</tr>');
+      firstDoc = false;
+    } else {
+      $('.DocShow')
+      .append('<tr>')
+      .append('<td><img class="resize" src="sexyaditya.jpg">' + doc.data().fname + ' ' + doc.data().lname + '</td>')
+      .append('<td>Paleontology</td>')
+      .append('<td><button class="btn btn-primary" type="button" id="button" onClick="pickDoctor(' + count + ')"> Select</button></td>')
+      .append('</tr>');
+    }
+  }
 
   // If the user has chosen a time, will get doctors that are
   // available during that time
@@ -17,6 +52,8 @@ function init() {
     .then(function (querySnapshot) {
       querySnapshot.forEach(function(doc) {
         displayDoctorProfile(doc)
+        doctorUidArray.push(doc.data().uid);
+        count++;
       });
     })
   } 
@@ -29,6 +66,8 @@ function init() {
     .then(function(querySnapshot) {
       querySnapshot.forEach(function(doc) {
         displayDoctorProfile(doc);
+        doctorUidArray.push(doc.data().uid);
+        count++;
       });
     })
     .catch(function(error) {
@@ -38,21 +77,26 @@ function init() {
   }
 }
 
-function displayDoctorProfile(doc) {
-  
-}
+/**
+ * Determines which doctor is selected by the patient
+ * and either:
+ * 1) Puts the new schedule in the database and emails
+ *    the doctor for confirmation
+ * 2) The patient selects a time
+ */
+function pickDoctor(num) {
+  const doctorUid = doctorUidArray[num];
 
-function pickDoctor(doctorUid) {
   // Adds schedule to database and emails doctor
   if (gotTime == true) {
-    db.collection('doctors').doc(`$`)
-  } 
+    //db.collection('doctors').doc(`$`)
+  }
   
-  // Sends user to time picker page
+  // Sends user to time select page
   else {
     localStorage.setItem('doctorUid', doctorUid);
     localStorage.setItem('gotDoctor', true);
-    window.location = "timePicker.html";
+    window.location = "timeSelect.html";
   }
 }
 

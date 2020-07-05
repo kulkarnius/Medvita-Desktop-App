@@ -183,16 +183,16 @@ function attemptJoinMeeting(num) {
  */
 function displayApp(doc) {
     $('.AppShow').append(doc.data().doctor).
-        append("&nbsp;").
-        append("<button class='btn btn-outline-light' onClick='attemptJoinMeeting(" + count + ")'>Begin Appointment</button>").
-        append('&nbsp;').
-        append(doc.data().month).
-        append("/").
-        append(doc.data().day).
-        append("&nbsp;@&nbsp;").
-        append(doc.data().time).
-        append("<br>").
-        append("<br>");
+    append("&nbsp;").
+    append("<button class='btn btn-outline-light' onClick='attemptJoinMeeting(" + count + ")'>Begin Appointment</button>").
+    append('&nbsp;').
+    append(doc.data().month).
+    append("/").
+    append(doc.data().day).
+    append("&nbsp;@&nbsp;").
+    append(doc.data().time).
+    append("<br>").
+    append("<br>");
 }
 
 /**
