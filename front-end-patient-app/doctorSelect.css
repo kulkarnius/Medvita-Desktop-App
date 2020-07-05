@@ -4,20 +4,21 @@ body{
     background-position: center;
     color:white;
 }
+
 table {
     border-collapse: collapse;
     width: 90%;
     margin: 0 auto;
-  }
+}
   
- td {
+td {
     border: 1px solid #dddddd;
     padding: 20px;
     vertical-align: middle;
-  }
+}
 
-  .resize {
-      width: 200px;
-      height: 200px;
-      object-fit: cover;
-  }
+.resize {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+}

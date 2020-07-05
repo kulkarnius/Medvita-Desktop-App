@@ -7,7 +7,38 @@ const auth = firebase.auth();
 
 const gotTime = localStorage.getItem('gotTime');
 
+/**
+ * Displays all of the available doctors
+ * Note: Add feature that puts recently chosen doctors on the list
+ * and figure out a way to best filter doctors (eg prioritize by
+ * availability within the next month)
+ */
 function init() {
+  var firstDoc = true;
+  // Displays the doctor profiles
+  function displayDoctorProfile(doc) {
+    if (firstDoc) {
+      $('.DocShow')
+      .append('<tr>')
+      .append('<th>Doctor</th>')
+      .append('<th>Specialization</th>')
+      .append('<th></th>')
+      .append('</tr>')
+      .append('<tr>')
+      .append('<td><img class="resize" src="sexyaditya.jpg">' + doc.data().fname + ' ' + doc.data().lname + '</td>')
+      .append('<td>Paleontology</td>')
+      .append('<td><button class="btn btn-primary" type="button" id="button"> Select</button></td>')
+      .append('</tr>');
+      firstDoc = false;
+    } else {
+      $('.DocShow')
+      .append('<tr>')
+      .append('<td><img class="resize" src="sexyaditya.jpg">' + doc.data().fname + ' ' + doc.data().lname + '</td>')
+      .append('<td>Paleontology</td>')
+      .append('<td><button class="btn btn-primary" type="button" id="button"> Select</button></td>')
+      .append('</tr>');
+    }
+  }
 
   // If the user has chosen a time, will get doctors that are
   // available during that time
@@ -38,9 +69,7 @@ function init() {
   }
 }
 
-function displayDoctorProfile(doc) {
-  
-}
+
 
 function pickDoctor(doctorUid) {
   // Adds schedule to database and emails doctor
