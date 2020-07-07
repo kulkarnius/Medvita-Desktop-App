@@ -54,9 +54,9 @@ function signup() {
                 fname: Fname,
                 lname: Lname,
                 birthday: {
-                    month: Month,
-                    day: Day,
-                    year: Year
+                  month: Month,
+                  day: Day,
+                  year: Year
                 },
                 address: Address,
                 city: City,

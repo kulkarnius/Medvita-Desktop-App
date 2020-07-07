@@ -85,16 +85,84 @@ function init() {
  * 2) The patient selects a time
  */
 function pickDoctor(num) {
-  const doctorUid = doctorUidArray[num];
 
   // Adds schedule to database and emails doctor
   if (gotTime == true) {
-    //db.collection('doctors').doc(`$`)
+
+    // Retrieves doctor info
+    var doctorUid = doctorUidArray[num];
+    var doctorName = '';
+    var doctorEmail = '';
+    db.collection('doctors').doc(`${doctorUid}`)
+    .get()
+    .then(function(doc) {
+      doctorName = doc.data().fname + ' ' + doc.data().lname;
+      doctorEmail = doc.data().email;
+    });
+
+    // Retrieves patient info
+    var patientUid = '';
+    var patientName = '';
+    var patientEmail = '';
+    auth.onAuthStateChanged(function(user) {
+      patientUid = user.uid;
+      db.collection('patients').doc(`${patientUid}`)
+      .get()
+      .then(function(doc) {
+        patientName = doc.data().fname + ' ' + doc.data().lname;
+        patientEmail = doc.data().email;
+      });
+    });
+
+    const year = localStorage.getItem('year');
+    const month = localStorage.getItem('month');
+    const day = localStorage.getItem('day');
+    const time = localStorage.getItem('time');
+    const dateConcat = year + month + day + time;
+
+    // Create appointment object
+    const appointment = {
+      doctor: {
+        uid: doctorUid,
+        name: doctorName,
+        email: doctorEmail,
+      },
+      patient: {
+        uid: patientUid,
+        name: patientName,
+        email: patientEmail,
+      },
+      when: {
+        year: year,
+        month: month,
+        day: day,
+        time: time
+      },
+      info: {
+        dateconcat: dateConcat,
+        notes: '',
+        webrtckey: '',
+        confirmed: false
+      },
+      sensors: {
+        temperature: 0.0,
+        tempdata: 0.0
+      }
+    };
+    console.log('appointment => ', appointment);
+
+    // Put new appointment in doctor's database
+    db.collection('doctors').doc(`${doctorUid}`)
+    .collection('schedule').doc(`${dateConcat}`)
+    .set(appointment);
+
+    // Emails the doctor for confirmation
+    
   }
   
   // Sends user to time select page
   else {
-    localStorage.setItem('doctorUid', doctorUid);
+    localStorage.setItem('doctorUid', doctorUidArray[num]);
     localStorage.setItem('gotDoctor', true);
     window.location = "timeSelect.html";
   }
