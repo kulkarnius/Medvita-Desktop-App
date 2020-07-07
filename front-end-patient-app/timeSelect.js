@@ -1,24 +1,25 @@
 /**
  * Time Picker
  */
-const NUM_TIMES = 672;
-// Initialize GCP
+
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-const gotDoctor = localStorage.getItem('gotDoctor');
-console.log('Got Doctor => ', gotDoctor);
+const NUM_TIMES = 672;
+var calendarTimeArray = new Array(NUM_TIMES);
+var firstTime = '';
 
-var availability = new Array();
-var appointments = new Array();
-var doctor = '';
-var patient = '';
-var doctorUid = '';
 var patientUid = '';
-var doctorEmail = '';
+var patientName = '';
 var patientEmail = '';
 
-var firstTime = ''; // Is the Sunday at the beginning of that week
+const gotDoctor = localStorage.getItem('gotDoctor');
+var doctorUid = '';
+var doctorName = '';
+var doctorEmail = '';
+
+document.querySelector('#previousWeekBtn').addEventListener('click', previousWeek);
+document.querySelector('#nextWeekBtn').addEventListener('click', nextWeek);
 
 function init() {
   // Sets up the calendar
@@ -62,7 +63,9 @@ function init() {
   }
 
   firstTime = yearStr + monthStr + dayStr + '0000';
+ 
   loadCalendar();
+ 
   drawCalendar();
 
   // Gets patient info
@@ -79,29 +82,18 @@ function init() {
 
   // Gets doctor info
   if (gotDoctor) {
-
-    // Overlay doctor availability on the calendar
-    const doctorUid = localStorage.getItem('doctorUid');
+    doctorUid = localStorage.getItem('doctorUid');
     db.collection('doctors').doc(`${doctorUid}`)
     .get()
     .then(function(doc) {
 
       // Colors in each box that the doctor is available during
-      doctor = doc.data().fname + ' ' + doc.data().lname;
+      doctorName = doc.data().fname + ' ' + doc.data().lname;
       doctorEmail = doc.data().email;
       availability = doc.data().availability;
     });
   }
-
-  console.log("Doctor availability => ", availability);
-  console.log("Patient appointments => ", appointments);
-  console.log("Doctor", doctor, " UID => ", doctorUid, ", Email => ", doctorEmail);
-  console.log("Patient", patient, " UID => ", patientUid, ", Email => ", patientEmail);
 }
-
-
-
-var calendarTimeArray = new Array(NUM_TIMES);
 
 function loadCalendar() {
 
@@ -127,11 +119,11 @@ function loadCalendar() {
         || (day > 30 && month >= 9 && month%2 == 1)
         || (day > 29 && month == 2 && year%4 == 0)
         || (day > 28 && month == 2 && year%4 != 0)) {
-          day = 0;
+          day = 1;
           month++;
           // End of year
           if (month > 12) {
-            month = 0;
+            month = 1;
             year++;
           }
         }
@@ -169,9 +161,13 @@ function loadCalendar() {
 
 function drawCalendar() {
   
+  $('.CalShow').html('');
+
   // Date header
   var htmlStr = '<div class="grid-container">';
-  htmlStr += '<div class="grid-item"></div>';
+  htmlStr += '<div class="grid-item">';
+  htmlStr += calendarTimeArray[0].substring(0, 4);
+  htmlStr += '</div>';
   var dateStr = '';
   var i;
   for (i=0; i<7; i++) {
@@ -204,15 +200,95 @@ function drawCalendar() {
   $('.CalShow').append(htmlStr);
 }
 
-
 function previousWeek() {
+  var year = parseInt(firstTime.substring(0, 4));
+  var month = parseInt(firstTime.substring(4, 6));
+  var day = parseInt(firstTime.substring(6, 8));
 
+  day -= 7;
+
+  // Previous month
+  if (day <= 0) {
+
+    month--;
+
+    // Previous year
+    if (month < 1) {
+      month = 12;
+      year--;
+    }
+
+    if (month == 1 || month == 3 || month == 5 || month == 7
+      || month == 8 || month == 10 || month == 12)
+        day += 31;
+      else if (month == 4 || month == 6 || month == 9 || month == 11)
+        day += 30;
+      else if (month == 2 && year%4 == 0)
+        day += 29;
+      else
+        day += 28;
+  }
+
+  const yearStr = year.toString();
+  var monthStr = month.toString();
+  if (monthStr.length == 1)
+    monthStr = '0' + monthStr;
+  var dayStr = day.toString();
+  if (dayStr.length == 1)
+    dayStr = '0' + dayStr;
+  
+  firstTime = yearStr + monthStr + dayStr + '0000';
+
+  loadCalendar();
+  drawCalendar();
 }
 
 function nextWeek() {
+  var year = parseInt(firstTime.substring(0, 4));
+  var month = parseInt(firstTime.substring(4, 6));
+  var day = parseInt(firstTime.substring(6, 8));
 
+  day += 7;
+
+  // End of month
+  if (day > 31
+  || (day > 30 && month <= 6 && month%2 == 0)
+  || (day > 30 && month >= 9 && month%2 == 1)
+  || (day > 29 && month == 2 && year%4 == 0)
+  || (day > 28 && month == 2 && year%4 != 0)) {
+    
+    if (month == 1 || month == 3 || month == 5 || month == 7
+    || month == 8 || month == 10 || month == 12)
+      day -= 31;
+    else if (month == 4 || month == 6 || month == 9 || month == 11)
+      day -= 30;
+    else if (month == 2 && year%4 == 0)
+      day -= 29;
+    else
+      day -= 28;
+
+    month++;
+    
+    // End of year
+    if (month > 12) {
+      month = 1;
+      year++;
+    }
+  }
+
+  const yearStr = year.toString();
+  var monthStr = month.toString();
+  if (monthStr.length == 1)
+    monthStr = '0' + monthStr;
+  var dayStr = day.toString();
+  if (dayStr.length == 1)
+    dayStr = '0' + dayStr;
+  
+  firstTime = yearStr + monthStr + dayStr + '0000';
+
+  loadCalendar();
+  drawCalendar();
 }
-
 
 function pickTime(btnNum) {
   // Get time info
@@ -230,7 +306,7 @@ function pickTime(btnNum) {
   // }
 
   // The patient has already chosen a doctor
-  if (gotDoctor) {
+  if (gotDoctor == true) {
 
     // Creates schedule and sends email confirmation to doctor
     //if(availability.includes(dateConcat)) {
@@ -297,12 +373,13 @@ function pickTime(btnNum) {
       .collection('schedule').doc(`${dateConcat}`)
       .set(appointment);
 
+      /*
       // Put new appointment in patient's database
-      db.collections('patients').doc(`${patientUid}`)
+      db.collection('patients').doc(`${patientUid}`)
       .set(
         { availability: [{ dateconcat: dateConcat, doctoruid: doctorUid }] },
         { merge: true }
-      )
+      )*/
 
       // Emails the doctor for confirmation
 
@@ -322,7 +399,7 @@ function pickTime(btnNum) {
     localStorage.setItem('hour', hour);
     localStorage.setItem('minute', minute);
     localStorage.setItem('dateConcat', dateConcat);
-    window.location = "./doctorPicker.html";
+    window.location = "./doctorSelect.html";
   }
 }
 
