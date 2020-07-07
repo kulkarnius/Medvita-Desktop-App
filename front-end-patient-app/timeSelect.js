@@ -106,44 +106,57 @@ var calendarTimeArray = new Array(NUM_TIMES);
 function loadCalendar() {
 
   function nextTime(time) {
-    var year = time.substring(0, 4);
-    var month = time.substring(4, 6);
-    var day = time.substring(6, 8);
-    var hour = time.substring(8, 10);
-    var minute = time.substring(10, 12);
+    var year = parseInt(time.substring(0, 4));
+    var month = parseInt(time.substring(4, 6));
+    var day = parseInt(time.substring(6, 8));
+    var hour = parseInt(time.substring(8, 10));
+    var minute = parseInt(time.substring(10, 12));
 
-    minute = (parseInt(minute)+15).toString
+    minute += 15;
     // End of hour
-    if (parseInt(minute) >= 60) {
-      minute = '00';
-      hour = (parseInt(hour)+1).toString();
+    if (minute >= 60) {
+      minute = 0;
+      hour++;
       // End of day
-      if (parseInt(hour) >= 24) {
-        hour = '00';
-        day = (parseInt(day)+1).toString();
+      if (hour >= 24) {
+        hour = 0;
+        day++;
         // End of month
-        if (parseInt(day) > 31
-        || (parseInt(day) > 30 && parseInt(month) <= 6 && parseInt(month)%2 == 0)
-        || (parseInt(day) > 30 && parseInt(month) >= 9 && parseInt(month)%2 == 1)
-        || (parseInt(day) > 29 && month == '2' && parseInt(year)%4 == 0)
-        || (parseInt(day) > 28 && month == '2' && parseInt(year)%4 != 0)) {
-          day = '00';
-          month = (parseInt(month)+1).toString();
+        if (day > 31
+        || (day > 30 && month <= 6 && month%2 == 0)
+        || (day > 30 && month >= 9 && month%2 == 1)
+        || (day > 29 && month == 2 && year%4 == 0)
+        || (day > 28 && month == 2 && year%4 != 0)) {
+          day = 0;
+          month++;
           // End of year
-          if (parseInt(month) > 12) {
-            month = '00';
-            year = (parseInt(year)+1).toString();
+          if (month > 12) {
+            month = 0;
+            year++;
           }
         }
       }
-
-
-
-
-
     }
 
-    return year + month + day + hour + minute;
+    var yearStr = year.toString();
+
+    var monthStr = month.toString();
+    if (monthStr.length == 1)
+      monthStr = '0' + monthStr;
+
+    var dayStr = day.toString();
+    if (dayStr.length == 1)
+      dayStr = '0' + dayStr;
+
+    var hourStr = hour.toString();
+    if (hourStr.length == 1)
+      hourStr = '0' + hourStr;
+
+    var minuteStr = minute.toString();
+    if (minuteStr.length == 1)
+      minuteStr = '0' + minuteStr;
+
+    return yearStr + monthStr + dayStr + hourStr + minuteStr;
   }
 
   var currentTime = firstTime; 
@@ -157,45 +170,38 @@ function loadCalendar() {
 function drawCalendar() {
   
   // Date header
-  $('.CalShow')
-  .append('<div class="grid-container">')
-  .append('<div class="grid-item">')
-  .append('</div>');
+  var htmlStr = '<div class="grid-container">';
+  htmlStr += '<div class="grid-item"></div>';
+  var dateStr = '';
   var i;
   for (i=0; i<7; i++) {
-    const dayConcat = calendarTimeArray[i*96];
-    const dateStr = dayConcat.substring(4, 6) + '/' + dayConcat.substring(6, 8);
-    $('.CalShow')
-    .append('<div class="grid-item">')
-    .append(dateStr)
-    .append('</div>');
+    dateStr = calendarTimeArray[i*96].substring(4, 6) + '/' + calendarTimeArray[i*96].substring(6, 8);
+    console.log(calendarTimeArray);
+    htmlStr += '<div class="grid-item">';
+    htmlStr += dateStr;
+    htmlStr += '</div>';
   }
 
   // Go through days and create buttons for each timeslot
   var c;
   for (c=0; c<NUM_TIMES/7; c++) {
     // Create label
-    var label = '';
-    if (c%2 == 0) {
-      const dateConcat = calendarTimeArray[c];
-      label = dateConcat.substring(8, 10) + ':' + dateConcat.substring(10, 12);
-    }
-    $('.CalShow')
-    .append('<div class="grid-item">')
-    .append(label)
-    .append('</div>');
+    const dateConcat = calendarTimeArray[c];
+    var label = dateConcat.substring(8, 10) + ':' + dateConcat.substring(10, 12);
+    htmlStr += '<div class="grid-item">';
+    htmlStr += label;
+    htmlStr += '</div>';
 
     // Fill in rows
     var r;
     for (r=0; r<7; r++) {
-      $('.CalShow')
-      .append('<button onclick="pickTime(')
-      .append((r*96 + c).toString())
-      .append(')"></button>');
+      htmlStr += '<button class="calendar-btn" onclick="pickTime(';
+      htmlStr += (r*96 + c).toString();
+      htmlStr += ')"></button>';
     }
   }
-
-  $('.CalShow').append('</div>');
+  htmlStr += '</div>';
+  $('.CalShow').append(htmlStr);
 }
 
 
@@ -210,7 +216,7 @@ function nextWeek() {
 
 function pickTime(btnNum) {
   // Get time info
-  const dateConcat = calendarTimeArray(btnNum);
+  const dateConcat = calendarTimeArray[btnNum];
   const year = dateConcat.substring(0, 4);
   const month = dateConcat.substring(4, 6);
   const day = dateConcat.substring(6, 8);
@@ -218,16 +224,16 @@ function pickTime(btnNum) {
   const minute = dateConcat.substring(10, 12);
 
   // Checks time against patient's schedule
-  if (appointments.includes(dateConcat)) {
-    alert("You already have an appointment set for this time");
-    return;
-  }
+  // if (appointments.includes(dateConcat)) {
+  //   alert("You already have an appointment set for this time");
+  //   return;
+  // }
 
   // The patient has already chosen a doctor
   if (gotDoctor) {
 
     // Creates schedule and sends email confirmation to doctor
-    if(availability.includes(dateConcat)) {
+    //if(availability.includes(dateConcat)) {
 
       var doctorName = '';
       var doctorEmail = '';
@@ -301,11 +307,11 @@ function pickTime(btnNum) {
       // Emails the doctor for confirmation
 
 
-    // Doctor is booked at this time
-    } else {
-      alert("Please choose a time that the doctor is available");
-      return;
-    }
+    // // Doctor is booked at this time
+    // } else {
+    //   alert("Please choose a time that the doctor is available");
+    //   return;
+    //}
 
   // The patient still needs to choose a doctor
   } else {
