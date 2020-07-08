@@ -54,7 +54,7 @@ function signup() {
                 lname: Lname,
                 email: Email,
                 deviceserial: '',
-                healthcareid: healthcareid,
+                //healthcareid: healthcareid,
                 uid: userid
               },                
               birthday: {
@@ -67,7 +67,8 @@ function signup() {
                 city: City,
                 province: Province,
                 postalcode: Postalcode
-              } 
+              },
+              appointmentconcat: new Array()
             };
 
             const db = firebase.firestore();
