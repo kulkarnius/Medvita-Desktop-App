@@ -53,6 +53,7 @@ function signup() {
                 fname: Fname,
                 lname: Lname,
                 email: Email,
+                deviceserial: '',
                 healthcareid: healthcareid,
                 uid: userid
               },                
