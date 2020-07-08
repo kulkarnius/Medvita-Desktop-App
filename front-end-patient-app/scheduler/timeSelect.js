@@ -39,15 +39,91 @@ function init() {
 
   drawCalendar();
 
-  if (gotDoctor == true) {
+  if (gotDoctor == 'true') {
     doctorUid = localStorage.getItem('doctorUid');
+    console.log(doctorUid);
     db.collection('doctors').doc(`${doctorUid}`)
     .get()
     .then(function(doc) {
       doctorAvailabilityArray = doc.data().availability;
+      overlayDoctorAvailability();
     });
-    overlayDoctorAvailability();
   }
+}
+
+// Load up all time slots in an array
+function loadCalendar() {
+  var currentTime = firstTime; 
+  var i;
+  for(i=0; i<NUM_TIMES; i++){
+    calendarTimeArray[i] = currentTime;
+    currentTime = getNextTime(currentTime);
+  }
+}
+
+// Draws the calendar on the screen
+function drawCalendar() {
+  
+  $('.CalShow').html('');
+
+  // Date header
+  var htmlStr = '<div class="grid-container">';
+  htmlStr += '<div class="grid-item">';
+  htmlStr += calendarTimeArray[0].substring(0, 4);
+  htmlStr += '</div>';
+  var dateStr = '';
+  var i;
+  for (i=0; i<7; i++) {
+    dateStr = calendarTimeArray[i*96].substring(4, 6) + '/' + calendarTimeArray[i*96].substring(6, 8);
+    htmlStr += '<div class="grid-item">';
+    htmlStr += dateStr;
+    htmlStr += '</div>';
+  }
+
+  // Go through days and create buttons for each timeslot
+  var c;
+  for (c=0; c<NUM_TIMES/7; c++) {
+    // Create label
+    const dateConcat = calendarTimeArray[c];
+    var label = dateConcat.substring(8, 10) + ':' + dateConcat.substring(10, 12);
+    htmlStr += '<div class="grid-item">';
+    htmlStr += label;
+    htmlStr += '</div>';
+
+    // Fill in rows
+    var r;
+    for (r=0; r<7; r++) {
+      htmlStr += '<button class="calendar-btn" id="calendarBtn';
+      htmlStr += (r*96 + c).toString();
+      htmlStr += '" onclick="pickTime(';
+      htmlStr += (r*96 + c).toString();
+      htmlStr += ')"></button>';
+    }
+  }
+  htmlStr += '</div>';
+  $('.CalShow').append(htmlStr);
+
+  if (gotDoctor == true) {
+
+  } else {
+
+    // Fills in previously selected times
+    for (i=0; i<selectedTimeArray.length; i++) {
+      if (calendarTimeArray.includes(selectedTimeArray[i])) {
+        const b = calendarTimeArray.indexOf(selectedTimeArray[i]);
+        document.getElementById(`${'calendarBtn'+b.toString()}`).style.background = btnSelectColor;
+      }
+    }
+  }
+}
+
+function overlayDoctorAvailability() {
+  doctorAvailabilityArray.forEach(function(dateConcat) {
+    if (calendarTimeArray.includes(dateConcat)) {
+      const b = calendarTimeArray.indexOf(dateConcat);
+      document.getElementById(`${'calendarBtn'+b.toString()}`).style.background = btnDoctorColor;
+    }
+  });
 }
 
 // Find the previous time box
@@ -217,81 +293,6 @@ function findSunday(today) {
   firstTime = yearStr + monthStr + dayStr + '0000';
 }
 
-function overlayDoctorAvailability() {
-  doctorAvailabilityArray.forEach(function(dateConcat) {
-    if (calendarTimeArray.includes(dateConcat)) {
-      const b = calendarTimeArray.indexOf(dateConcat);
-      document.getElementById(`${'calendarBtn'+b.toString()}`).style.background = btnDoctorColor;
-    }
-  });
-}
-
-// Load up all time slots in an array
-function loadCalendar() {
-  var currentTime = firstTime; 
-  var i;
-  for(i=0; i<NUM_TIMES; i++){
-    calendarTimeArray[i] = currentTime;
-    currentTime = getNextTime(currentTime);
-  }
-}
-
-// Draws the calendar on the screen
-function drawCalendar() {
-  
-  $('.CalShow').html('');
-
-  // Date header
-  var htmlStr = '<div class="grid-container">';
-  htmlStr += '<div class="grid-item">';
-  htmlStr += calendarTimeArray[0].substring(0, 4);
-  htmlStr += '</div>';
-  var dateStr = '';
-  var i;
-  for (i=0; i<7; i++) {
-    dateStr = calendarTimeArray[i*96].substring(4, 6) + '/' + calendarTimeArray[i*96].substring(6, 8);
-    htmlStr += '<div class="grid-item">';
-    htmlStr += dateStr;
-    htmlStr += '</div>';
-  }
-
-  // Go through days and create buttons for each timeslot
-  var c;
-  for (c=0; c<NUM_TIMES/7; c++) {
-    // Create label
-    const dateConcat = calendarTimeArray[c];
-    var label = dateConcat.substring(8, 10) + ':' + dateConcat.substring(10, 12);
-    htmlStr += '<div class="grid-item">';
-    htmlStr += label;
-    htmlStr += '</div>';
-
-    // Fill in rows
-    var r;
-    for (r=0; r<7; r++) {
-      htmlStr += '<button class="calendar-btn" id="calendarBtn';
-      htmlStr += (r*96 + c).toString();
-      htmlStr += '" onclick="pickTime(';
-      htmlStr += (r*96 + c).toString();
-      htmlStr += ')"></button>';
-    }
-  }
-  htmlStr += '</div>';
-  $('.CalShow').append(htmlStr);
-
-  if (gotDoctor == true) {
-
-  } else {
-
-    // Fills in previously selected times
-    for (i=0; i<selectedTimeArray.length; i++) {
-      if (calendarTimeArray.includes(selectedTimeArray[i])) {
-        const b = calendarTimeArray.indexOf(selectedTimeArray[i]);
-        document.getElementById(`${'calendarBtn'+b.toString()}`).style.background = btnSelectColor;
-      }
-    }
-  }
-}
-
 // Displays the previous week's calendar
 function previousWeek() {
   var year = parseInt(firstTime.substring(0, 4));
@@ -334,6 +335,7 @@ function previousWeek() {
 
   loadCalendar();
   drawCalendar();
+  overlayDoctorAvailability()
 }
 
 // Displays the next week's calendar
@@ -380,8 +382,10 @@ function nextWeek() {
   
   firstTime = yearStr + monthStr + dayStr + '0000';
 
+
   loadCalendar();
   drawCalendar();
+  overlayDoctorAvailability()
 }
 
 // When the user selects one of the time boxes
@@ -394,35 +398,102 @@ function pickTime(btnNum) {
   const nextTime = getNextTime(dateConcat);
   const nextTime2 = getNextTime(nextTime);
 
-  // Patient has chosen a doctor
-  if (gotDoctor == true) {
+  // Determines the color of the buttons once deselected
+  var btnColorDefault = '';
+  if (gotDoctor == 'true')
+    btnColorDefault = btnDoctorColor;
+  else
+    btnColorDefault = btnColor;
 
+  // Button has been selected already
+  if (selectedTimeArray.includes(dateConcat)) {
+    
+    // Destroy timeblock
+    selectedTimeArray.splice(selectedTimeArray.indexOf(dateConcat), 1);
+    document.getElementById(`${'calendarBtn'+btnNum.toString()}`).style.background = btnColorDefault;
 
-  // Patient has yet to choose a doctor
+    // Removes next part of timeblock
+    if (selectedTimeArray.includes(nextTime) && !selectedTimeArray.includes(nextTime2)) {
+      selectedTimeArray.splice(selectedTimeArray.indexOf(nextTime), 1);
+      if (btnNum+1 < NUM_TIMES)
+        document.getElementById(`${'calendarBtn'+(btnNum+1).toString()}`).style.background = btnColorDefault;
+    }
+
+    // Removes previous part of timeblock
+    if (selectedTimeArray.includes(previousTime) && !selectedTimeArray.includes(previousTime2)) {
+      selectedTimeArray.splice(selectedTimeArray.indexOf(previousTime), 1);
+      if (btnNum-1 > 0)
+        document.getElementById(`${'calendarBtn'+(btnNum-1).toString()}`).style.background = btnColorDefault;
+    }
+
+  // Button hasn't been selected
   } else {
 
-    // Button has been selected already
-    if (selectedTimeArray.includes(dateConcat)) {
-      
-      // Destroy timeblock
-      selectedTimeArray.splice(selectedTimeArray.indexOf(dateConcat), 1);
-      document.getElementById(`${'calendarBtn'+btnNum.toString()}`).style.background = btnColor;
+    // Patient has chosen a doctor
+    if (gotDoctor == 'true') {
+      if (doctorAvailabilityArray.includes(dateConcat)) {    
 
-      // Removes next part of timeblock
-      if (selectedTimeArray.includes(nextTime) && !selectedTimeArray.includes(nextTime2)) {
-        selectedTimeArray.splice(selectedTimeArray.indexOf(nextTime), 1);
-        if (btnNum+1 < NUM_TIMES)
-          document.getElementById(`${'calendarBtn'+(btnNum+1).toString()}`).style.background = btnColor;
+        // New block
+        if (!selectedTimeArray.includes(nextTime) && !selectedTimeArray.includes(previousTime)) {
+          // Clear previous block
+          selectedTimeArray.forEach(function(oldDate) {
+            if (calendarTimeArray.includes(oldDate)) {
+              const b = calendarTimeArray.indexOf(oldDate);
+              document.getElementById(`${'calendarBtn'+b.toString()}`).style.background = btnColorDefault;
+            }
+          });
+          selectedTimeArray = new Array();
+
+          // Create new block
+          selectedTimeArray.push(dateConcat);
+          document.getElementById(`${'calendarBtn'+btnNum.toString()}`).style.background = btnSelectColor;
+          if (doctorAvailabilityArray.includes(nextTime)) {
+            selectedTimeArray.push(nextTime);
+            if (calendarTimeArray.includes(nextTime))
+              document.getElementById(`${'calendarBtn'+(btnNum+1).toString()}`).style.background = btnSelectColor;
+          } else {
+            selectedTimeArray.push(previousTime);
+            if (calendarTimeArray.includes(previousTime))
+              document.getElementById(`${'calendarBtn'+(btnNum-1).toString()}`).style.background = btnSelectColor;
+          }
+
+        // Building off old block
+        } else {
+
+          selectedTimeArray.push(dateConcat);
+          document.getElementById(`${'calendarBtn'+btnNum.toString()}`).style.background = btnSelectColor;
+
+          // Beginning of block
+          if (selectedTimeArray.includes(nextTime)) {
+            const nextTime3 = getNextTime(nextTime2);
+            if (selectedTimeArray.includes(nextTime3)) {
+              if (calendarTimeArray.includes(nextTime3)) {
+                const b = calendarTimeArray.indexOf(nextTime3);
+                document.getElementById(`${'calendarBtn'+b.toString()}`).style.background = btnColorDefault;
+              }
+              const i = selectedTimeArray.indexOf(nextTime3);
+              selectedTimeArray.splice(i, 1);
+            }
+
+          // End of block
+          } else if (selectedTimeArray.includes(previousTime)) {
+            const previousTime3 = getPreviousTime(previousTime2);
+            if (selectedTimeArray.includes(previousTime3)) {
+              if (calendarTimeArray.includes(previousTime3)) {
+                const b = calendarTimeArray.indexOf(previousTime3);
+                document.getElementById(`${'calendarBtn'+b.toString()}`).style.background = btnColorDefault;
+              }
+              const i = selectedTimeArray.indexOf(previousTime3);
+              selectedTimeArray.splice(i, 1);
+            }
+          }
+        }
+
+      } else {
+        alert('Please choose a time that the doctor is available during (shown in green)');
       }
 
-      // Removes previous part of timeblock
-      if (selectedTimeArray.includes(previousTime) && !selectedTimeArray.includes(previousTime2)) {
-        selectedTimeArray.splice(selectedTimeArray.indexOf(previousTime), 1);
-        if (btnNum-1 > 0)
-          document.getElementById(`${'calendarBtn'+(btnNum-1).toString()}`).style.background = btnColor;
-      }
-
-    // Button hasn't been selected
+    // Patient has not chosen a doctor
     } else {
 
       // Add timeblock
@@ -434,16 +505,12 @@ function pickTime(btnNum) {
           selectedTimeArray.push(nextTime);
           if (btnNum+1 < NUM_TIMES)
             document.getElementById(`${'calendarBtn'+(btnNum+1).toString()}`).style.background = btnSelectColor;
-      } 
+      }
     }
   }
+
+  console.log(selectedTimeArray);
 }
-
-
-
-
-
-
 
 /*
 // Confirms and creates a new appointment, or sends patient to doctor select

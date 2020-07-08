@@ -22,6 +22,7 @@ function init() {
   // Displays the doctor profiles
   function displayDoctorProfile(doc) {
     var htmlStr = '';
+    const docInfo = doc.data().info;
     if (firstDoc) {
       htmlStr += '<tr>';
       htmlStr += '<th>Doctor</th>';
@@ -29,14 +30,14 @@ function init() {
       htmlStr += '<th></th>';
       htmlStr += '</tr>';
       htmlStr += '<tr>';
-      htmlStr += '<td><img class="resize" src="sexyaditya.jpg">' + doc.data().fname + ' ' + doc.data().lname + '</td>';
+      htmlStr += '<td><img class="resize" src="sexyaditya.jpg">' + docInfo.fname + ' ' + docInfo.lname + '</td>';
       htmlStr += '<td>Paleontology</td>';
       htmlStr += '<td><button class="btn btn-primary" type="button" id="button" onClick="pickDoctor(' + count + ')"> Select</button></td>';
       htmlStr += '</tr>';
       firstDoc = false;
     } else {
       htmlStr += '<tr>';
-      htmlStr += '<td><img class="resize" src="sexyaditya.jpg">' + doc.data().fname + ' ' + doc.data().lname + '</td>';
+      htmlStr += '<td><img class="resize" src="sexyaditya.jpg">' + docInfo.fname + ' ' + docInfo.lname + '</td>';
       htmlStr += '<td>Paleontology</td>';
       htmlStr += '<td><button class="btn btn-primary" type="button" id="button" onClick="pickDoctor(' + count + ')"> Select</button></td>';
       htmlStr += '</tr>';
@@ -66,7 +67,7 @@ function init() {
     .then(function(querySnapshot) {
       querySnapshot.forEach(function(doc) {
         displayDoctorProfile(doc);
-        doctorUidArray.push(doc.data().uid);
+        doctorUidArray.push(doc.data().info.uid);
         count++;
       });
     })

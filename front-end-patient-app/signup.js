@@ -54,7 +54,7 @@ function signup() {
                 lname: Lname,
                 email: Email,
                 deviceserial: '',
-                healthcareid: healthcareid,
+                //healthcareid: healthcareid,
                 uid: userid
               },                
               birthday: {
