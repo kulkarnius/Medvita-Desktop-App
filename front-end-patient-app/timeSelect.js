@@ -8,10 +8,13 @@ const auth = firebase.auth();
 const NUM_TIMES = 672;
 var calendarTimeArray = new Array(NUM_TIMES);
 var firstTime = '';
+
 const btnColor = '#c6d9e4cc';
 const btnSelectColor = '#2853c8';
+const btnDoctorColor = '#0fb309';
 
 var selectedTimeArray = new Array();
+var doctorAvailabilityArray = new Array();
 
 var patientUid = '';
 var patientName = '';
@@ -71,7 +74,6 @@ function init() {
   firstTime = yearStr + monthStr + dayStr + '0000';
  
   loadCalendar();
- 
   drawCalendar();
 
   // Gets patient info
@@ -393,17 +395,17 @@ function pickTime(btnNum) {
 
   // Get time info
   const dateConcat = calendarTimeArray[btnNum];
+  const previousTime = getPreviousTime(dateConcat);
+  const previousTime2 = getPreviousTime(previousTime);
+  const nextTime = getNextTime(dateConcat);
+  const nextTime2 = getNextTime(nextTime);
 
+  // Patient has chosen a doctor
   if (gotDoctor == true) {
-    
 
+
+  // Patient has yet to choose a doctor
   } else {
-
-    const previousTime = getPreviousTime(dateConcat);
-    const previousTime2 = getPreviousTime(previousTime);
-
-    const nextTime = getNextTime(dateConcat);
-    const nextTime2 = getNextTime(nextTime);
 
     // Button has been selected already
     if (selectedTimeArray.includes(dateConcat)) {
@@ -441,7 +443,6 @@ function pickTime(btnNum) {
       } 
     }
   }
-  console.log(selectedTimeArray);
 }
 
 
