@@ -21,46 +21,46 @@ function init() {
 
   // Displays the doctor profiles
   function displayDoctorProfile(doc) {
+    var htmlStr = '';
     if (firstDoc) {
-      $('.DocShow')
-      .append('<tr>')
-      .append('<th>Doctor</th>')
-      .append('<th>Specialization</th>')
-      .append('<th></th>')
-      .append('</tr>')
-      .append('<tr>')
-      .append('<td><img class="resize" src="sexyaditya.jpg">' + doc.data().fname + ' ' + doc.data().lname + '</td>')
-      .append('<td>Paleontology</td>')
-      .append('<td><button class="btn btn-primary" type="button" id="button" onClick="pickDoctor(' + count + ')"> Select</button></td>')
-      .append('</tr>');
+      htmlStr += '<tr>';
+      htmlStr += '<th>Doctor</th>';
+      htmlStr += '<th>Specialization</th>';
+      htmlStr += '<th></th>';
+      htmlStr += '</tr>';
+      htmlStr += '<tr>';
+      htmlStr += '<td><img class="resize" src="sexyaditya.jpg">' + doc.data().fname + ' ' + doc.data().lname + '</td>';
+      htmlStr += '<td>Paleontology</td>';
+      htmlStr += '<td><button class="btn btn-primary" type="button" id="button" onClick="pickDoctor(' + count + ')"> Select</button></td>';
+      htmlStr += '</tr>';
       firstDoc = false;
     } else {
-      $('.DocShow')
-      .append('<tr>')
-      .append('<td><img class="resize" src="sexyaditya.jpg">' + doc.data().fname + ' ' + doc.data().lname + '</td>')
-      .append('<td>Paleontology</td>')
-      .append('<td><button class="btn btn-primary" type="button" id="button" onClick="pickDoctor(' + count + ')"> Select</button></td>')
-      .append('</tr>');
+      htmlStr += '<tr>';
+      htmlStr += '<td><img class="resize" src="sexyaditya.jpg">' + doc.data().fname + ' ' + doc.data().lname + '</td>';
+      htmlStr += '<td>Paleontology</td>';
+      htmlStr += '<td><button class="btn btn-primary" type="button" id="button" onClick="pickDoctor(' + count + ')"> Select</button></td>';
+      htmlStr += '</tr>';
     }
+    $('.DocShow').append(htmlStr);
   }
 
-  // If the user has chosen a time, will get doctors that are
-  // available during that time
-  if (gotTime) {
-    db.collection('doctors').where("availability", "array-contains", `${dateConcat}`)
-    .limit(10).get()
-    .then(function (querySnapshot) {
-      querySnapshot.forEach(function(doc) {
-        displayDoctorProfile(doc)
-        doctorUidArray.push(doc.data().uid);
-        count++;
-      });
-    })
-  } 
+  // // If the user has chosen a time, will get doctors that are
+  // // available during that time
+  // if (gotTime) {
+  //   db.collection('doctors').where("availability", "array-contains", `${dateConcat}`)
+  //   .limit(10).get()
+  //   .then(function (querySnapshot) {
+  //     querySnapshot.forEach(function(doc) {
+  //       displayDoctorProfile(doc)
+  //       doctorUidArray.push(doc.data().uid);
+  //       count++;
+  //     });
+  //   })
+  // } 
 
-  // If the user has not chosen a time, then will pull from recently used
-  // doctors, fill the rest up with random ones
-  else {
+  // // If the user has not chosen a time, then will pull from recently used
+  // // doctors, fill the rest up with random ones
+  // else {
     db.collection('doctors').limit(10)
     .get()
     .then(function(querySnapshot) {
@@ -75,7 +75,7 @@ function init() {
       alert("Could not retrieve doctors");
     });
   }
-}
+// }
 
 /**
  * Determines which doctor is selected by the patient
