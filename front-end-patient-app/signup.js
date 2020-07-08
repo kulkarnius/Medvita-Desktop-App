@@ -49,19 +49,24 @@ function signup() {
 
             // Stores rest of data to database
             let data = {
-                uid: userid,
-                email: Email,
+              info: {
                 fname: Fname,
                 lname: Lname,
-                birthday: {
-                    month: Month,
-                    day: Day,
-                    year: Year
-                },
+                email: Email,
+                healthcareid: healthcareid,
+                uid: userid
+              },                
+              birthday: {
+                month: Month,
+                day: Day,
+                year: Year
+              },
+              location: {
                 address: Address,
                 city: City,
                 province: Province,
                 postalcode: Postalcode
+              } 
             };
 
             const db = firebase.firestore();
