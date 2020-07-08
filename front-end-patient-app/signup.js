@@ -67,7 +67,8 @@ function signup() {
                 city: City,
                 province: Province,
                 postalcode: Postalcode
-              } 
+              },
+              appointmentconcat: new Array()
             };
 
             const db = firebase.firestore();

@@ -31,80 +31,22 @@ document.querySelector('#nextWeekBtn').addEventListener('click', nextWeek);
 
 // Initializes patient (and possibly doctor) and creates the calendar
 function init() {
-  // Sets up the calendar
+
   const today = new Date();
-  var thisYear = today.getFullYear();
-  var thisMonth = today.getMonth()+1;
-  var thisDay = today.getDate();
-  const dayOfWeek = today.getDay();
-  
-  // Finds the date of this week's Sunday
-  thisDay -= dayOfWeek;
-  if (thisDay <= 0) {
-    thisMonth--;
+  findSunday(today);
 
-    // Previous year
-    if (thisMonth <= 0) {
-      thisMonth = 12
-      thisYear--;
-    }
-
-    // Finds the date
-    else if (thisMonth == 2 && thisYear%4 != 0)
-      thisDay += 28;
-    if (thisMonth == 2) // Leap year
-      thisDay += 29;
-    else if (thisMonth <= 7 && thisMonth%2 == 0
-          || thisMonth >= 8 && thisMonth%2 == 1)
-      thisDay += 30
-    else
-      thisDay += 31
-  }
-
-  const yearStr = thisYear.toString();
-  var monthStr = thisMonth.toString();
-  if (monthStr.length == 1){
-    monthStr = '0' + monthStr;
-  }
-  var dayStr = thisDay.toString();
-  if (dayStr.length == 1) {
-    dayStr = '0' + dayStr;
-  }
-
-  firstTime = yearStr + monthStr + dayStr + '0000';
- 
   loadCalendar();
+
   drawCalendar();
 
-  // Gets patient info
-  auth.onAuthStateChanged(function(user) {
-    if (user) {
-      patientUid = user.uid;
-      db.collection('patients').doc(`${patientUid}`)
-      .get()
-      .then(function(doc) {
-        patient = doc.data().fname + ' ' + doc.data().lname;
-        patientEmail = doc.data().email;
-        availability = doc.data().availability;
-      });
-    } /*else {
-      alert('No user found');
-      window.location = "login.html";
-    }*/
-  });
-
-  // Gets doctor info
-  if (gotDoctor) {
+  if (gotDoctor == true) {
     doctorUid = localStorage.getItem('doctorUid');
     db.collection('doctors').doc(`${doctorUid}`)
     .get()
     .then(function(doc) {
-
-      // Colors in each box that the doctor is available during
-      doctorName = doc.data().fname + ' ' + doc.data().lname;
-      doctorEmail = doc.data().email;
-      availability = doc.data().availability;
+      doctorAvailabilityArray = doc.data().availability;
     });
+    overlayDoctorAvailability();
   }
 }
 
@@ -230,6 +172,58 @@ function getNextTime(time) {
     minuteStr = '0' + minuteStr;
 
   return yearStr + monthStr + dayStr + hourStr + minuteStr;
+}
+
+function findSunday(today) {
+  // Sets up the calendar
+  var thisYear = today.getFullYear();
+  var thisMonth = today.getMonth()+1;
+  var thisDay = today.getDate();
+  const dayOfWeek = today.getDay();
+  
+  // Finds the date of this week's Sunday
+  thisDay -= dayOfWeek;
+  if (thisDay <= 0) {
+    thisMonth--;
+
+    // Previous year
+    if (thisMonth <= 0) {
+      thisMonth = 12
+      thisYear--;
+    }
+
+    // Finds the date
+    else if (thisMonth == 2 && thisYear%4 != 0)
+      thisDay += 28;
+    if (thisMonth == 2) // Leap year
+      thisDay += 29;
+    else if (thisMonth <= 7 && thisMonth%2 == 0
+          || thisMonth >= 8 && thisMonth%2 == 1)
+      thisDay += 30
+    else
+      thisDay += 31
+  }
+
+  const yearStr = thisYear.toString();
+  var monthStr = thisMonth.toString();
+  if (monthStr.length == 1){
+    monthStr = '0' + monthStr;
+  }
+  var dayStr = thisDay.toString();
+  if (dayStr.length == 1) {
+    dayStr = '0' + dayStr;
+  }
+
+  firstTime = yearStr + monthStr + dayStr + '0000';
+}
+
+function overlayDoctorAvailability() {
+  doctorAvailabilityArray.forEach(function(dateConcat) {
+    if (calendarTimeArray.includes(dateConcat)) {
+      const b = calendarTimeArray.indexOf(dateConcat);
+      document.getElementById(`${'calendarBtn'+b.toString()}`).style.background = btnDoctorColor;
+    }
+  });
 }
 
 // Load up all time slots in an array
@@ -568,4 +562,14 @@ function confrimTime() {
   }
 }*/
 
-init();
+// Loads in patient and initializes page
+auth.onAuthStateChanged(function(user) {
+  patientUid = user.uid;
+  db.collection('patients').doc(`${patientUid}`)
+  .get()
+  .then(function(doc) {
+    patient = doc.data().info.fname + ' ' + doc.data().info.lname;
+    patientEmail = doc.data().info.email;
+  });
+  init();
+});
