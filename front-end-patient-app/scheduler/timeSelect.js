@@ -27,7 +27,7 @@ var doctorEmail = '';
 
 document.querySelector('#previousWeekBtn').addEventListener('click', previousWeek);
 document.querySelector('#nextWeekBtn').addEventListener('click', nextWeek);
-//document.querySelector('#confirmBtn').addEventListener('click', confrimTime);
+document.querySelector('#confirmBtn').addEventListener('click', confrimTime);
 
 // Initializes patient (and possibly doctor) and creates the calendar
 function init() {
@@ -45,7 +45,14 @@ function init() {
     db.collection('doctors').doc(`${doctorUid}`)
     .get()
     .then(function(doc) {
-      doctorAvailabilityArray = doc.data().availability;
+      const doctor = doc.data();
+      doctorName = doctor.info.fname + ' ' + doctor.info.lname;
+      doctorEmail = doctor.info.email;
+      doctor.availability.forEach(function(dateConcat) {
+        if (doctor.availability.includes(getNextTime(dateConcat))
+        ||  doctor.availability.includes(getPreviousTime(dateConcat)))
+        doctorAvailabilityArray.push(dateConcat);
+      });
       overlayDoctorAvailability();
     });
   }
@@ -117,6 +124,7 @@ function drawCalendar() {
   }
 }
 
+// Fills in the buttons that the doctor is available during
 function overlayDoctorAvailability() {
   doctorAvailabilityArray.forEach(function(dateConcat) {
     if (calendarTimeArray.includes(dateConcat)) {
@@ -250,6 +258,7 @@ function getNextTime(time) {
   return yearStr + monthStr + dayStr + hourStr + minuteStr;
 }
 
+// Finds the most recent sunday
 function findSunday(today) {
   // Sets up the calendar
   var thisYear = today.getFullYear();
@@ -512,7 +521,6 @@ function pickTime(btnNum) {
   console.log(selectedTimeArray);
 }
 
-/*
 // Confirms and creates a new appointment, or sends patient to doctor select
 function confrimTime() {
 
@@ -521,113 +529,78 @@ function confrimTime() {
     return;
   }
 
-  if (gotDoctor == true) {
-    // Get time info
+  // Loads appointment into database
+  if (gotDoctor == 'true') {
+
+    // Find starting time
+    selectedTimeArray.sort();
     const dateConcat = selectedTimeArray[0];
     const year = dateConcat.substring(0, 4);
     const month = dateConcat.substring(4, 6);
     const day = dateConcat.substring(6, 8);
     const hour = dateConcat.substring(8, 10);
     const minute = dateConcat.substring(10, 12);
+    const length = selectedTimeArray.length * 15;
 
-    // Checks time against patient's schedule
-    // if (appointments.includes(dateConcat)) {
-    //   alert("You already have an appointment set for this time");
-    //   return;
-    // }
+    // Create appointment object
+    const appointment = {
+      doctor: {
+        uid: doctorUid,
+        name: doctorName,
+        email: doctorEmail,
+      },
+      patient: {
+        uid: patientUid,
+        name: patientName,
+        email: patientEmail,
+      },
+      when: {
+        year: year,
+        month: month,
+        day: day,
+        hour: hour,
+        minute: minute,
+        length: length
+      },
+      info: {
+        dateconcat: dateConcat,
+        reason: '',
+        notes: '',
+        webrtckey: '',
+        confirmed: false
+      },
+      sensors: {
+        temperature: 0.0,
+        tempdata: 0.0
+      }
+    };
+    console.log('appointment => ', appointment);
 
-    // The patient has already chosen a doctor
-  
+    // Put new appointment in doctor's database
+    const doctorRef = db.collection('doctors').doc(`${doctorUid}`);
+    doctorRef.collection('schedule').doc(`${dateConcat}`)
+    .set(appointment);
 
-      // Creates schedule and sends email confirmation to doctor
-      //if(availability.includes(dateConcat)) {
+    // Update doctor's patient list and availability
+    if (selectedTimeArray.length == 2) {
+      doctorRef.update({
+        patients: firebase.firestore.FieldValue.arrayUnion(`${patientUid}`),
+        availability: firebase.firestore.FieldValue.arrayRemove(selectedTimeArray[0], selectedTimeArray[1])
+      });
+    } else {
+      doctorRef.update({
+        patients: firebase.firestore.FieldValue.arrayUnion(`${patientUid}`),
+        availability: firebase.firestore.FieldValue.arrayRemove(selectedTimeArray[0], selectedTimeArray[1], selectedTimeArray[2])
+      });
+    }
 
-        var doctorName = '';
-        var doctorEmail = '';
-        db.collection('doctors').doc(`${doctorUid}`)
-        .get()
-        .then(function(doc) {
-          doctorName = doc.data().fname + ' ' + doc.data().lname;
-          doctorEmail = doc.data().email;
-        });
-
-        // Retrieves patient info
-        var patientUid = '';
-        var patientName = '';
-        var patientEmail = '';
-        auth.onAuthStateChanged(function(user) {
-          patientUid = user.uid;
-          db.collection('patients').doc(`${patientUid}`)
-          .get()
-          .then(function(doc) {
-            patientName = doc.data().fname + ' ' + doc.data().lname;
-            patientEmail = doc.data().email;
-          });
-        });
-
-        const dateConcat = year + month + day + hour + minute;
-
-        // Create appointment object
-        const appointment = {
-          doctor: {
-            uid: doctorUid,
-            name: doctorName,
-            email: doctorEmail,
-          },
-          patient: {
-            uid: patientUid,
-            name: patientName,
-            email: patientEmail,
-          },
-          when: {
-            year: year,
-            month: month,
-            day: day,
-            hour: hour,
-            minute: minute
-          },
-          info: {
-            dateconcat: dateConcat,
-            notes: '',
-            webrtckey: '',
-            confirmed: false
-          },
-          sensors: {
-            temperature: 0.0,
-            tempdata: 0.0
-          }
-        };
-        console.log('appointment => ', appointment);
-
-        // Put new appointment in doctor's database
-        db.collection('doctors').doc(`${doctorUid}`)
-        .collection('schedule').doc(`${dateConcat}`)
-        .set(appointment);
-
-        /*
-        // Put new appointment in patient's database
-        db.collection('patients').doc(`${patientUid}`)
-        .set(
-          { availability: [{ dateconcat: dateConcat, doctoruid: doctorUid }] },
-          { merge: true }
-        )*/
-
-        // Emails the doctor for confirmation
-
-
-      // // Doctor is booked at this time
-      // } else {
-      //   alert("Please choose a time that the doctor is available");
-      //   return;
-      //}
-/*
-
+  // Sends patient to doctor picker
   } else {
     localStorage.setItem('gotTime', true);
     localStorage.setItem('chosenTimes', selectedTimeArray);
     window.location = "./doctorSelect.html";
   }
-}*/
+}
 
 // Loads in patient and initializes page
 auth.onAuthStateChanged(function(user) {
@@ -635,7 +608,7 @@ auth.onAuthStateChanged(function(user) {
   db.collection('patients').doc(`${patientUid}`)
   .get()
   .then(function(doc) {
-    patient = doc.data().info.fname + ' ' + doc.data().info.lname;
+    patientName = doc.data().info.fname + ' ' + doc.data().info.lname;
     patientEmail = doc.data().info.email;
   });
   init();
