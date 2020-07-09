@@ -35,7 +35,7 @@ function createWindow() {
     });
 
     win.loadURL(url.format({
-        pathname: path.join(__dirname, 'doctorSelect.html'),
+        pathname: path.join(__dirname, 'scheduler/doctorSelect.html'),
         protocol: 'file',
         slashes: true
     }));
